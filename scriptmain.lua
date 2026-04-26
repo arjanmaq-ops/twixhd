@@ -31,21 +31,17 @@ end
 -- 🟡 MONITORING & SPAWN DETECTION
 RunService.RenderStepped:Connect(function()
     if espActive then
-        -- Scans workspace for everything with a Humanoid (handles new spawns)
         for _, obj in ipairs(workspace:GetDescendants()) do
             if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid") then
-                -- Highlights EVERYONE (including you)
                 applyHighlight(obj, Color3.fromRGB(255, 255, 0), "ArjanHighlighter")
             end
         end
     else
-        -- Cleanup when OFF
         for _, v in ipairs(workspace:GetDescendants()) do
             if v.Name == "ArjanHighlighter" or v.Name == "CamHighlighter" then v:Destroy() end
         end
     end
     
-    -- Speed Logic
     local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     if h then
         h.WalkSpeed = walkSpeedActive and currentSpeed or 16
@@ -64,7 +60,7 @@ screenGui.Name = "ArjanHubUI"
 local success, _ = pcall(function() screenGui.Parent = CoreGui end)
 if not success then screenGui.Parent = player:WaitForChild("PlayerGui") end
 
--- 🔵 DRAGGABLE TOGGLE BUTTON (Matches photo)
+-- 🔵 DRAGGABLE TOGGLE BUTTON
 local toggleBtn = Instance.new("TextButton", screenGui)
 toggleBtn.Size = UDim2.new(0, 60, 0, 60)
 toggleBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
@@ -75,10 +71,10 @@ toggleBtn.TextSize = 40
 toggleBtn.Font = Enum.Font.SourceSansBold
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 12)
 
--- 📦 MENU FRAME (Compact)
+-- 📦 MENU FRAME
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 210, 0, 310) 
-mainFrame.Position = UDim2.new(0.5, -105, 0.5, -155)
+mainFrame.Size = UDim2.new(0, 210, 0, 360) -- Increased height for new buttons
+mainFrame.Position = UDim2.new(0.5, -105, 0.5, -180)
 mainFrame.BackgroundColor3 = theme.Bg
 mainFrame.Visible = false
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 15)
@@ -91,7 +87,7 @@ Instance.new("UIPadding", mainFrame).PaddingTop = UDim.new(0, 15)
 -- 🔘 TOGGLE COMPONENT
 local function createToggle(text, callback)
     local btn = Instance.new("TextButton", mainFrame)
-    btn.Size = UDim2.new(0, 180, 0, 45)
+    btn.Size = UDim2.new(0, 180, 0, 40)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
     btn.Text = text .. ": OFF"
     btn.TextColor3 = theme.Text
@@ -112,11 +108,11 @@ createToggle("Speed Mod", function(s) walkSpeedActive = s end)
 
 -- 📏 SPEED SLIDER
 local sFrame = Instance.new("Frame", mainFrame)
-sFrame.Size = UDim2.new(0, 180, 0, 50)
+sFrame.Size = UDim2.new(0, 180, 0, 45)
 sFrame.BackgroundTransparency = 1
 
 local lab = Instance.new("TextLabel", sFrame)
-lab.Size = UDim2.new(1, 0, 0, 20)
+lab.Size = UDim2.new(1, 0, 0, 15)
 lab.Text = "Speed: 16"
 lab.TextColor3 = theme.Text
 lab.BackgroundTransparency = 1
@@ -127,7 +123,7 @@ bar.Position = UDim2.new(0, 0, 0.7, 0)
 bar.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
 
 local knob = Instance.new("TextButton", bar)
-knob.Size = UDim2.new(0, 20, 0, 20)
+knob.Size = UDim2.new(0, 18, 0, 18)
 knob.Position = UDim2.new(0, 0, 0.5, 0)
 knob.AnchorPoint = Vector2.new(0.5, 0.5)
 knob.BackgroundColor3 = theme.Accent
@@ -145,9 +141,35 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
+-- ➕ MEDKIT SPAWNER
+local medBtn = Instance.new("TextButton", mainFrame)
+medBtn.Size = UDim2.new(0, 180, 0, 40)
+medBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Red for Medkit
+medBtn.Text = "Spawn Medkit"
+medBtn.TextColor3 = theme.Text
+medBtn.Font = Enum.Font.SourceSansBold
+Instance.new("UICorner", medBtn)
+
+medBtn.Activated:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        -- Searches for Medkit in game storage to clone it
+        local kit = game:FindFirstChild("Medkit", true) or game:FindFirstChild("Med Kit", true)
+        if kit and kit:IsA("BasePart") or kit:IsA("Model") then
+            local newKit = kit:Clone()
+            newKit.Parent = workspace
+            if newKit:IsA("Model") then
+                newKit:SetPrimaryPartCFrame(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5))
+            else
+                newKit.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+            end
+        end
+    end
+end)
+
 -- 📷 CAMERA LOCATOR
 local camBtn = Instance.new("TextButton", mainFrame)
-camBtn.Size = UDim2.new(0, 180, 0, 45)
+camBtn.Size = UDim2.new(0, 180, 0, 40)
 camBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 180)
 camBtn.Text = "Locate Camera"
 camBtn.TextColor3 = theme.Text
