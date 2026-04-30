@@ -39,7 +39,7 @@ RunService.Heartbeat:Connect(function()
     
     -- Fullbright Logic (Vibrant Colors Version)
     if fullbrightActive then
-        Lighting.Ambient = Color3.new(1, 1, 1) -- Makes textures show true color
+        Lighting.Ambient = Color3.new(1, 1, 1) 
         Lighting.Brightness = 1
         Lighting.FogEnd = 1e6
         Lighting.GlobalShadows = false
@@ -148,13 +148,18 @@ end)
 createToggle(moveTab, "Enable Speed", function(s) walkSpeedActive = s end)
 
 local sFrame = Instance.new("Frame", moveTab)
-sFrame.Size, sFrame.BackgroundTransparency = UDim2.new(1, 0, 0, 50), 1
+sFrame.Size, sFrame.BackgroundTransparency = UDim2.new(1, 0, 0, 60), 1 -- Increased height for padding
 local lab = Instance.new("TextLabel", sFrame)
-lab.Size, lab.BackgroundTransparency, lab.Text, lab.TextColor3 = UDim2.new(1, 0, 0, 15), 1, "Speed: 16", Color3.new(0.7,0.7,0.7)
+lab.Size, lab.BackgroundTransparency, lab.Text, lab.TextColor3 = UDim2.new(1, 0, 0, 20), 1, "Speed: 16", Color3.new(0.7,0.7,0.7)
+
 local bar = Instance.new("Frame", sFrame)
-bar.Size, bar.Position, bar.BackgroundColor3 = UDim2.new(1, -10, 0, 4), UDim2.new(0, 5, 0.7, 0), Color3.fromRGB(45, 45, 50)
+bar.Size, bar.Position, bar.BackgroundColor3 = UDim2.new(1, -20, 0, 8), UDim2.new(0, 10, 0.7, 0), Color3.fromRGB(45, 45, 50)
+Instance.new("UICorner", bar)
+
 local knob = Instance.new("TextButton", bar)
-knob.Size, knob.AnchorPoint, knob.BackgroundColor3 = UDim2.new(0, 16, 0, 16), Vector2.new(0.5, 0.5), Color3.fromRGB(114, 185, 245)
+knob.Size, knob.AnchorPoint, knob.BackgroundColor3 = UDim2.new(0, 35, 0, 35), Vector2.new(0.5, 0.5), Color3.fromRGB(114, 185, 245)
+knob.Text = ""
+knob.Active = true -- Important for mobile touch registration
 Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
 knob.InputChanged:Connect(function(i)
@@ -171,7 +176,6 @@ local visualTab, visualBtn = createTab("Visual")
 createToggle(visualTab, "Universal ESP", function(s) espActive = s end)
 createToggle(visualTab, "Divebell ESP", function(s) divebellEspActive = s end)
 
--- Fixed Fullbright Toggle to restore original colors
 createToggle(visualTab, "Fullbright", function(s) 
     fullbrightActive = s 
     if not s then
@@ -183,7 +187,6 @@ createToggle(visualTab, "Fullbright", function(s)
     end
 end)
 
--- Restored Camera Locator Button
 local camBtn = Instance.new("TextButton", visualTab)
 camBtn.Size, camBtn.BackgroundColor3 = UDim2.new(1, 0, 0, 40), Color3.fromRGB(30, 30, 35)
 camBtn.Text, camBtn.TextColor3 = "Locate All Cameras", Color3.new(1,1,1)
