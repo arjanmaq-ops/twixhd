@@ -2,12 +2,23 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 
 -- 🔒 SETTINGS
 local espActive, divebellEspActive = false, false
 local walkSpeedActive = false
+local fullbrightActive = false
 local currentSpeed = 16
+
+-- Store original settings to restore them perfectly
+local origSettings = {
+    Brightness = Lighting.Brightness,
+    ClockTime = Lighting.ClockTime,
+    FogEnd = Lighting.FogEnd,
+    GlobalShadows = Lighting.GlobalShadows,
+    Ambient = Lighting.Ambient
+}
 
 -- 🎯 HIGHLIGHTER
 local function applyHighlight(model, color, name)
@@ -26,6 +37,14 @@ end
 RunService.Heartbeat:Connect(function()
     local char = player.Character
     
+    -- Fullbright Logic (Vibrant Colors Version)
+    if fullbrightActive then
+        Lighting.Ambient = Color3.new(1, 1, 1) -- Makes textures show true color
+        Lighting.Brightness = 1
+        Lighting.FogEnd = 1e6
+        Lighting.GlobalShadows = false
+    end
+
     -- Visuals (ESP)
     if espActive then
         for _, obj in ipairs(workspace:GetDescendants()) do
@@ -151,6 +170,18 @@ end)
 local visualTab, visualBtn = createTab("Visual")
 createToggle(visualTab, "Universal ESP", function(s) espActive = s end)
 createToggle(visualTab, "Divebell ESP", function(s) divebellEspActive = s end)
+
+-- Fixed Fullbright Toggle to restore original colors
+createToggle(visualTab, "Fullbright", function(s) 
+    fullbrightActive = s 
+    if not s then
+        Lighting.Ambient = origSettings.Ambient
+        Lighting.Brightness = origSettings.Brightness
+        Lighting.ClockTime = origSettings.ClockTime
+        Lighting.FogEnd = origSettings.FogEnd
+        Lighting.GlobalShadows = origSettings.GlobalShadows
+    end
+end)
 
 -- Restored Camera Locator Button
 local camBtn = Instance.new("TextButton", visualTab)
