@@ -1,10 +1,18 @@
+-- Wait for the game to load completely
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
 local player = game.Players.LocalPlayer
 local runService = game:GetService("RunService")
 local inputService = game:GetService("UserInputService")
+local coreGui = game:GetService("CoreGui")
 
-local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+-- FIX: Parenting to CoreGui instead of PlayerGui to prevent execution crashes
+local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ArjanUltimateFly"
 screenGui.ResetOnSpawn = false
+screenGui.Parent = coreGui
 
 -- Mini Menu (Left)
 local mainFrame = Instance.new("Frame", screenGui)
