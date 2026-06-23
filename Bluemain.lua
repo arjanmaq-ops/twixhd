@@ -111,10 +111,8 @@ runService.Heartbeat:Connect(function()
             for _, v in pairs(char:GetDescendants()) do
                 if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
                     v.Transparency = 1
-                elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
-                    if v:IsA("SurfaceAppearance") then v:Destroy() else v.Transparency = 1 end
-                elseif v:IsA("Shirt") or v:IsA("Pants") or v:IsA("ShirtGraphic") then
-                    v:Destroy()
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1
                 elseif v:IsA("Accessory") then
                     local h = v:FindFirstChild("Handle")
                     if h then h.Transparency = 1 end
