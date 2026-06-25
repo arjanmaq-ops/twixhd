@@ -13,15 +13,15 @@ local TracerSettings = {
     Thickness = 0.15 -- Much tighter, thinner profile lines
 }
 
--- // ULTRA-LIGHT NEON RGB THEME // --
+-- // MAXIMUM BRIGHTNESS NEON RGB THEME // --
 local Colors = {
-    Color3.fromRGB(255, 100, 100),
-    Color3.fromRGB(255, 180, 50),
-    Color3.fromRGB(255, 255, 120),
-    Color3.fromRGB(120, 255, 120),
-    Color3.fromRGB(120, 200, 255),
-    Color3.fromRGB(180, 120, 255),
-    Color3.fromRGB(255, 150, 255)
+    Color3.fromRGB(255, 0, 0),     -- Maximum Bright Red
+    Color3.fromRGB(255, 128, 0),   -- Maximum Bright Orange
+    Color3.fromRGB(255, 255, 0),   -- Maximum Bright Yellow
+    Color3.fromRGB(0, 255, 0),     -- Maximum Bright Lime Green
+    Color3.fromRGB(0, 255, 255),   -- Maximum Bright Cyan / Neon Blue
+    Color3.fromRGB(128, 0, 255),   -- Maximum Bright Purple
+    Color3.fromRGB(255, 0, 255)    -- Maximum Bright Magenta / Pink
 }
 
 local VisualFolder = Workspace:FindFirstChild("ArjansTracers") or Instance.new("Folder", Workspace)
