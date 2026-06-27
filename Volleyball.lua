@@ -5,30 +5,34 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
 
 -- // STATE MANAGEMENT // --
 local TracerSettings = {
     Enabled = true,
     Length = 120,
-    Thickness = 0.15 -- Much tighter, thinner profile lines
+    Thickness = 0.15
+}
+
+local AirAlignSettings = {
+    Enabled = true
 }
 
 -- // MAXIMUM BRIGHTNESS NEON RGB THEME // --
 local Colors = {
-    Color3.fromRGB(255, 0, 0),     -- Maximum Bright Red
-    Color3.fromRGB(255, 128, 0),   -- Maximum Bright Orange
-    Color3.fromRGB(255, 255, 0),   -- Maximum Bright Yellow
-    Color3.fromRGB(0, 255, 0),     -- Maximum Bright Lime Green
-    Color3.fromRGB(0, 255, 255),   -- Maximum Bright Cyan / Neon Blue
-    Color3.fromRGB(128, 0, 255),   -- Maximum Bright Purple
-    Color3.fromRGB(255, 0, 255)    -- Maximum Bright Magenta / Pink
+    Color3.fromRGB(255, 0, 0),     
+    Color3.fromRGB(255, 128, 0),   
+    Color3.fromRGB(255, 255, 0),   
+    Color3.fromRGB(0, 255, 0),     
+    Color3.fromRGB(0, 255, 255),   
+    Color3.fromRGB(128, 0, 255),   
+    Color3.fromRGB(255, 0, 255)    
 }
 
 local VisualFolder = Workspace:FindFirstChild("ArjansTracers") or Instance.new("Folder", Workspace)
 VisualFolder.Name = "ArjansTracers"
 local ActiveBeams = {}
 
--- Clean up old interface installations
 if CoreGui:FindFirstChild("ArjansHubV9") then
     CoreGui.ArjansHubV9:Destroy()
 end
@@ -39,9 +43,8 @@ ScreenGui.Name = "ArjansHubV9"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui
 
--- Main Control Frame
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 240, 0, 150)
+Frame.Size = UDim2.new(0, 240, 0, 190)
 Frame.Position = UDim2.new(0.05, 0, 0.35, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
 Frame.BorderSizePixel = 0
@@ -54,7 +57,6 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 10)
 Corner.Parent = Frame
 
--- Open / Close Toggle Button
 local OpenCloseBtn = Instance.new("TextButton")
 OpenCloseBtn.Size = UDim2.new(0, 90, 0, 30)
 OpenCloseBtn.Position = UDim2.new(0, 10, 0, 10)
@@ -78,7 +80,6 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 15
 Title.Parent = Frame
 
--- Functional Toggle Button
 local Toggle = Instance.new("TextButton")
 Toggle.Size = UDim2.new(0, 210, 0, 35)
 Toggle.Position = UDim2.new(0, 15, 0, 40)
@@ -93,10 +94,23 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 6)
 ToggleCorner.Parent = Toggle
 
--- Value Adjustment Panel
+local AirTurnToggle = Instance.new("TextButton")
+AirTurnToggle.Size = UDim2.new(0, 210, 0, 35)
+AirTurnToggle.Position = UDim2.new(0, 15, 0, 80)
+AirTurnToggle.BackgroundColor3 = Color3.fromRGB(0, 125, 255)
+AirTurnToggle.Text = "Air-Align Lock: ON"
+AirTurnToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AirTurnToggle.Font = Enum.Font.SourceSansSemibold
+AirTurnToggle.TextSize = 14
+AirTurnToggle.Parent = Frame
+
+local AirTurnCorner = Instance.new("UICorner")
+AirTurnCorner.CornerRadius = UDim.new(0, 6)
+AirTurnCorner.Parent = AirTurnToggle
+
 local ValueDisplay = Instance.new("TextLabel")
 ValueDisplay.Size = UDim2.new(0, 210, 0, 20)
-ValueDisplay.Position = UDim2.new(0, 15, 0, 85)
+ValueDisplay.Position = UDim2.new(0, 15, 0, 125)
 ValueDisplay.BackgroundTransparency = 1
 ValueDisplay.Text = "Distance: 120 studs"
 ValueDisplay.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -104,10 +118,9 @@ ValueDisplay.Font = Enum.Font.SourceSans
 ValueDisplay.TextSize = 13
 ValueDisplay.Parent = Frame
 
--- CUSTOM MOBILE DRAGGABLE SLIDER TRACK
 local SliderTrack = Instance.new("Frame")
 SliderTrack.Size = UDim2.new(0, 210, 0, 8)
-SliderTrack.Position = UDim2.new(0, 15, 0, 115)
+SliderTrack.Position = UDim2.new(0, 15, 0, 155)
 SliderTrack.BackgroundColor3 = Color3.fromRGB(45, 48, 55)
 SliderTrack.BorderSizePixel = 0
 SliderTrack.Parent = Frame
@@ -193,6 +206,17 @@ Toggle.MouseButton1Click:Connect(function()
         Toggle.Text = "Show Trajectories: OFF"
         VisualFolder:ClearAllChildren()
         table.clear(ActiveBeams)
+    end
+end)
+
+AirTurnToggle.MouseButton1Click:Connect(function()
+    AirAlignSettings.Enabled = not AirAlignSettings.Enabled
+    if AirAlignSettings.Enabled then
+        AirTurnToggle.BackgroundColor3 = Color3.fromRGB(0, 125, 255)
+        AirTurnToggle.Text = "Air-Align Lock: ON"
+    else
+        AirTurnToggle.BackgroundColor3 = Color3.fromRGB(60, 65, 75)
+        AirTurnToggle.Text = "Air-Align Lock: OFF"
     end
 end)
 
@@ -287,22 +311,41 @@ end)
 
 -- // FRAME PIPELINE LOCK ENGINE // --
 RunService.RenderStepped:Connect(function()
-    if not TracerSettings.Enabled then return end
+    -- Handle Tracers
+    if TracerSettings.Enabled then
+        for model, data in pairs(ActiveBeams) do
+            if data.Head and data.Head.Parent then
+                data.Beam.Width0 = TracerSettings.Thickness
+                data.Beam.Width1 = TracerSettings.Thickness
 
-    for model, data in pairs(ActiveBeams) do
-        if data.Head and data.Head.Parent then
-            -- Tighter visual locks applied over updates here
-            data.Beam.Width0 = TracerSettings.Thickness
-            data.Beam.Width1 = TracerSettings.Thickness
+                local rawLook = data.Head.CFrame.LookVector
+                local flatDirection = Vector3.new(rawLook.X, 0, rawLook.Z).Unit
 
-            local rawLook = data.Head.CFrame.LookVector
-            local flatDirection = Vector3.new(rawLook.X, 0, rawLook.Z).Unit
+                data.A0.WorldPosition = data.Head.Position
+                data.A1.WorldPosition = data.Head.Position + (flatDirection * TracerSettings.Length)
+                data.Beam.Enabled = true
+            else
+                cleanModelTracer(model)
+            end
+        end
+    end
 
-            data.A0.WorldPosition = data.Head.Position
-            data.A1.WorldPosition = data.Head.Position + (flatDirection * TracerSettings.Length)
-            data.Beam.Enabled = true
-        else
-            cleanModelTracer(model)
+    -- FORCE C FRAME ROTATION IN AIR (Overrides Game Locks completely)
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    if rootPart and humanoid and AirAlignSettings.Enabled then
+        -- Checking if character is currently mid-air/jumping
+        if humanoid.FloorMaterial == Enum.Material.Air then
+            local camLook = Camera.CFrame.LookVector
+            -- Keep the turn strictly flat on the ground axis so your character stays upright
+            local targetDirection = Vector3.new(camLook.X, 0, camLook.Z).Unit
+            
+            if targetDirection.Magnitude > 0 then
+                -- Direct CFrame override updates every single frame to out-prioritize the game scripts
+                rootPart.CFrame = CFrame.lookAt(rootPart.Position, rootPart.Position + targetDirection)
+            end
         end
     end
 end)
